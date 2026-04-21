@@ -83,4 +83,21 @@ def crop_recommendation_logic(data):
         "predicted_crop": crop,
         "accuracy": model_results[best_model_name]["accuracy"],
         "f1_score": model_results[best_model_name]["f1_score"]
+        ,
+        "all_models": [
+            {
+                "name": name,
+                "accuracy": round(model_results[name]["accuracy"]*100,2),
+                "f1_score": round(model_results[name]["f1_score"]*100,2)
+            }
+            for name in model_names
+        ]
     }
+
+
+
+# from pyngrok import ngrok
+
+# ngrok.set_auth_token("3CgHetjrfcyXc8OKl4Fb9Z2y0aN_6GTYfbgLFfF9cJrfYRMmp")
+# public_url = ngrok.connect(4000)
+# print(public_url)
