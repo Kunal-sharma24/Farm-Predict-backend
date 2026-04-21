@@ -1,18 +1,10 @@
 flask==3.0.3
 flask-cors==4.0.1
 
-<<<<<<< HEAD
 torch --index-url https://download.pytorch.org/whl/cpu
-=======
-torch
->>>>>>> f08bceecce1d555a9516065555a10e03dd8436c6
-numpy==1.26.4
+
 pandas==2.2.2
+numpy==1.26.4S
 
-scikit-learn==1.4.2
+scikit-learn==1.6.1
 gunicorn==22.0.0
-
-
-# gunicorn app:app
-
-# pip install -r requirements.txt
