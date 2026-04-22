@@ -3,6 +3,9 @@ from flask_cors import CORS
 
 # Import your logic
 from flaskcrop import crop_recommendation_logic
+from flaskIrrigation import irrigation_predict_logic
+
+# Create the Flask app
 
 app = Flask(__name__)
 CORS(app)
@@ -39,18 +42,31 @@ def fertilizer():
 # -------------------------------
 # Irrigation API (dummy for now)
 # -------------------------------
-@app.route('/irrigation', methods=['POST'])
-def irrigation():
+@app.route("/irrigation_predict", methods=["POST"])
+def irrigation_predict():
     data = request.get_json()
-
-    return jsonify({
-        "message": "Irrigation API working",
-        "input": data
-    })
+    result = irrigation_predict_logic(data)
+    return jsonify(result)
 
 
 # -------------------------------
 # Run Server
-# -------------------------------
-if __name__ == '__main__':
-    app.run(debug=True)
+import threading
+
+def run_app():
+    app.run(host="0.0.0.0", port=2004)
+
+threading.Thread(target=run_app).start()
+
+
+
+
+# from pyngrok import ngrok
+
+# ngrok.set_auth_token("3CgHetjrfcyXc8OKl4Fb9Z2y0aN_6GTYfbgLFfF9cJrfYRMmp")
+# public_url = ngrok.connect(2004)
+# print(public_url)
+
+
+# import os
+# os._exit(0)

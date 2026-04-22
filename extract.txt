@@ -1,0 +1,23 @@
+import zipfile
+import os
+
+# @title Specify the zip file name and destination directory
+zip_file_name = "./irrigation_model_files/ft_transformer_water_requirement_model.zip"
+destination_directory = "./irrigation_model_files"
+# zip_file_name = "crop_model_files.zip"
+# destination_directory = "./"
+
+# Create the destination directory if it doesn't exist
+os.makedirs(destination_directory, exist_ok=True)
+
+# Unzip the file
+try:
+    with zipfile.ZipFile(zip_file_name, 'r') as zip_ref:
+        zip_ref.extractall(destination_directory)
+    print(f"Successfully unzipped '{zip_file_name}' to '{destination_directory}'")
+except FileNotFoundError:
+    print(f"Error: The file '{zip_file_name}' was not found. Please ensure it's uploaded to the correct path.")
+except zipfile.BadZipFile:
+    print(f"Error: '{zip_file_name}' is not a valid zip file.")
+except Exception as e:
+    print(f"An unexpected error occurred: {e}")
