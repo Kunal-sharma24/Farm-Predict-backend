@@ -6,11 +6,9 @@ import pandas as pd
 from pytorch_tabnet.tab_model import TabNetRegressor
 from pytorch_tabular import TabularModel
 
-# ---------------- PATH SETUP ----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(BASE_DIR, "irrigation_model_files")
 
-# ---------------- FEATURE CONFIG ----------------
 TABNET_FEATURE_COLS = [
     'min_temperature', 'max_temperature',
     'crop_type_encoded', 'soil_type_encoded', 'region_encoded', 'weather_encoded',
@@ -37,7 +35,7 @@ FTTRANSFORMER_CATEGORICAL_COLS = [
     'CROP TYPE_SUGARCANE', 'CROP TYPE_TOMATO', 'CROP TYPE_WHEAT'
 ]
 
-# ---------mapping----------
+
 CROP_MAP = {
     "banana": 0, "bean": 1, "cabbage": 2, "citrus": 3,
     "cotton": 4, "maize": 5, "melon": 6, "mustard": 7,
@@ -51,21 +49,21 @@ REGION_MAP = {"desert": 0, "humid": 1, "semi arid": 2, "semi humid": 3}
 
 WEATHER_MAP = {"normal": 0, "rainy": 1, "sunny": 2, "windy": 3}
 
-#------------prepossessing---------------
+#prepossessing
 def preprocess_input(data):
     processed = {}
 
-    # numerical
+  
     processed["min_temperature"] = float(data["min_temperature"])
     processed["max_temperature"] = float(data["max_temperature"])
 
-    # encoded values
+    
     processed["crop_type_encoded"] = CROP_MAP[data["crop_type"].lower()]
     processed["soil_type_encoded"] = SOIL_MAP[data["soil_type"].lower()]
     processed["region_encoded"] = REGION_MAP[data["region"].lower()]
     processed["weather_encoded"] = WEATHER_MAP[data["weather"].lower()]
 
-    # TEMPERATURE category (simple logic)
+    
     avg_temp = (processed["min_temperature"] + processed["max_temperature"]) / 2
     if avg_temp < 20:
         processed["TEMPERATURE"] = "LOW"
@@ -74,12 +72,12 @@ def preprocess_input(data):
     else:
         processed["TEMPERATURE"] = "HIGH"
 
-    # one-hot encoding (initialize all 0)
+    
     for col in TABNET_FEATURE_COLS:
         if col not in processed:
             processed[col] = 0
 
-    # set correct one-hot values
+    
     processed[f"SOIL TYPE_{data['soil_type'].upper()}"] = 1
     processed[f"REGION_{data['region'].upper()}"] = 1
     processed[f"WEATHER CONDITION_{data['weather'].upper()}"] = 1
@@ -87,14 +85,13 @@ def preprocess_input(data):
 
     return processed
 
-# ---------------- LOAD FILES ----------------
+
 with open(os.path.join(MODEL_DIR, "tabnet_scaler.pkl"), "rb") as f:
     tabnet_scaler = pickle.load(f)
 
 with open(os.path.join(MODEL_DIR, "irrigation_model_results.pkl"), "rb") as f:
     model_results = pickle.load(f)
 
-# ---------------- LOAD MODELS ----------------
 def load_models():
     tabnet_model = TabNetRegressor()
     tabnet_model.load_model(os.path.join(MODEL_DIR, "tabnet_irrigation_model.zip"))
@@ -107,7 +104,6 @@ def load_models():
 
 tabnet_model, ft_model = load_models()
 
-# ---------------- PREDICTION FUNCTIONS ----------------
 def predict_tabnet(data_dict):
     input_values = [float(data_dict[f]) for f in TABNET_FEATURE_COLS]
     X = np.array([input_values], dtype=np.float32)
@@ -138,10 +134,10 @@ def predict_fttransformer(data_dict):
 
     return float(pred_df.iloc[0][0])
 
-# ---------------- MAIN FUNCTION (FOR app.py) ----------------
+#app.py
 def irrigation_predict_logic(data):
     try:
-        # -------- Validate SIMPLE input --------
+    
         required_fields = [
             "crop_type", "soil_type", "region", "weather",
             "min_temperature", "max_temperature"
@@ -154,19 +150,19 @@ def irrigation_predict_logic(data):
                 "required_fields": required_fields
             }, 400
 
-        # -------- PREPROCESS --------
+        
         processed_data = preprocess_input(data)
 
         predictions = {}
         errors = {}
 
-        # -------- TabNet --------
+        
         try:
             predictions['TabNet'] = predict_tabnet(processed_data)
         except Exception as e:
             errors['TabNet'] = str(e)
 
-        # -------- FTTransformer --------
+        
         try:
             predictions['FTTransformer'] = predict_fttransformer(processed_data)
         except Exception as e:
@@ -178,7 +174,7 @@ def irrigation_predict_logic(data):
                 "details": errors
             }, 500
 
-        # -------- Best model --------
+        
         best_model_name = max(
             predictions,
             key=lambda m: model_results.get(m, {}).get('r2', -999)
@@ -187,7 +183,7 @@ def irrigation_predict_logic(data):
         best_prediction = predictions[best_model_name]
         best_metrics = model_results.get(best_model_name, {})
 
-        # -------- All models (for frontend chart) --------
+        
         all_models_data = []
         for model_name in ['TabNet', 'FTTransformer']:
             metrics = model_results.get(model_name, {})

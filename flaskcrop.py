@@ -7,21 +7,17 @@ import models
 
 from models import DNFNet, AutoInt, GrowNet, SAINT, NAM
 
-# 🔥 critical fix
 sys.modules['__main__'] = models
 
-# -------------------------------
 # Paths
-# -------------------------------
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(BASE_DIR, "crop_model_files")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# -------------------------------
+
 # Load Preprocessing
-# -------------------------------
 
 with open(os.path.join(MODEL_DIR, "scaler.pkl"), "rb") as f:
     scaler = pickle.load(f)
@@ -34,9 +30,8 @@ with open(os.path.join(MODEL_DIR, "model_results.pkl"), "rb") as f:
 
 model_results = {name: {"accuracy": acc, "f1_score": f1} for name, acc, f1 in model_results_list}
 
-# -------------------------------
+
 # Load Models
-# -------------------------------
 
 model_names = ['DNF-Net', 'AutoInt', 'GrowNet', 'SAINT', 'NAM']
 loaded_models = {}
@@ -48,12 +43,7 @@ for name in model_names:
     model.eval()
     loaded_models[name] = model
 
-print("✅ Models loaded successfully")
-
-
-# -------------------------------
-# MAIN FUNCTION (used by app.py)
-# -------------------------------
+# app.py
 
 def crop_recommendation_logic(data):
     features = ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
